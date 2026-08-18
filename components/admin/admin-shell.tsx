@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Building2,
@@ -11,11 +12,13 @@ import {
   CreditCard,
   Sparkles,
   MessageSquare,
-  Leaf,
+  MapPin,
   Menu,
   LogOut,
   User as UserIcon,
   Bell,
+  AlertTriangle,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -38,12 +41,15 @@ import { CROSS_ALERTS } from "@/lib/admin-data";
 const NAV = [
   { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/implementors", label: "Implementors", icon: Building2 },
-  { href: "/admin/facilities", label: "Facilities", icon: Building2 },
+  { href: "/admin/facilities", label: "Facilities", icon: MapPin },
   { href: "/admin/programs", label: "Programs", icon: FolderKanban },
   { href: "/admin/users", label: "User management", icon: ShieldCheck },
   { href: "/admin/billing", label: "Billing & Subscription", icon: CreditCard },
   { href: "/admin/messages", label: "Message Log", icon: MessageSquare },
   { href: "/admin/insights", label: "Insights", icon: Sparkles },
+  { href: "/admin/se-alerts", label: "AEFI Alerts", icon: AlertTriangle },
+  { href: "/admin/coverage", label: "Coverage", icon: ClipboardList },
+  { href: "/admin/audit", label: "Audit Log", icon: ClipboardList },
 ] as const;
 
 // Stub user — replace with real session data from your API
@@ -65,9 +71,15 @@ function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
-        <div className="h-9 w-9 rounded-lg bg-sidebar-primary text-sidebar-primary-foreground grid place-items-center">
-          <Leaf className="h-5 w-5" />
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
+        <div className="relative h-12 w-12 shrink-0">
+          <Image
+            src="/icons/lafyai-icon.png"
+            alt="LafyAI logo"
+            fill
+            className="object-contain"
+            priority
+          />
         </div>
         <div className="leading-tight">
           <div className="font-semibold tracking-tight">lafyai</div>
@@ -148,7 +160,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Sheet>
 
           <div className="md:hidden font-semibold flex items-center gap-2">
-            <Leaf className="h-5 w-5 text-primary" /> lafyai
+            <div className="relative h-8 w-8">
+              <Image src="/icons/lafyai-icon.png" alt="LafyAI" fill className="object-contain" />
+            </div>
+            lafyai
           </div>
 
           <Badge variant="secondary" className="hidden sm:inline-flex">
@@ -168,7 +183,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80">
                 <DropdownMenuLabel className="flex items-center justify-between">
-                  <span>Cross-implementor alerts</span>
+                  <span>Cross-implementor AEFI alerts</span>
                   <Badge variant="secondary" className="tabular-nums">
                     {openAlerts.length} open
                   </Badge>
@@ -191,7 +206,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   onClick={() => router.push("/admin/se-alerts")}
                   className="justify-center text-primary"
                 >
-                  View all SE alerts
+                  View all AEFI alerts
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
