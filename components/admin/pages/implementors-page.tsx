@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import {
+  Search, Building2, Users, Syringe, AlertTriangle, TrendingUp, X,
+} from "lucide-react";
 
 import { PageHeader } from "@/components/lafy/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -19,9 +21,55 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { IMPLEMENTORS, type Implementor } from "@/lib/admin-data";
+import { cn } from "@/lib/utils";
 
 const REGIONS = ["All regions", ...Array.from(new Set(IMPLEMENTORS.map((i) => i.region)))];
-const STATUSES = ["All statuses", "active", "onboarding", "suspended"];
+const STATUSES = ["All statuses", "active", "onboarding", "suspended"] as const;
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "bg-emerald-500/12 text-emerald-700 border-emerald-200",
+  onboarding: "bg-amber-500/12 text-amber-700 border-amber-200",
+  suspended: "bg-destructive/10 text-destructive border-destructive/20",
+};
+
+function StatusDot({ status }: { status: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+        STATUS_COLORS[status] ?? "bg-muted text-muted-foreground border-border",
+      )}
+    >
+      <span className={cn(
+        "h-1.5 w-1.5 rounded-full",
+        status === "active" ? "bg-emerald-500" :
+        status === "onboarding" ? "bg-amber-500" : "bg-destructive",
+      )} />
+      {status}
+    </span>
+  );
+}
+
+function KpiCard({ icon: Icon, label, value, sub, color = "text-primary" }: {
+  icon: typeof Users; label: string; value: string; sub: string; color?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className="mt-1.5 text-3xl font-bold tabular-nums">{value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
+          </div>
+          <div className={cn("rounded-lg bg-primary/8 p-2", color)}>
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function ImplementorsPage() {
   const [q, setQ] = useState("");
@@ -41,36 +89,69 @@ export function ImplementorsPage() {
     [q, region, status],
   );
 
+  const totalFacilities = IMPLEMENTORS.reduce((s, i) => s + i.facilities, 0);
+  const totalChildren = IMPLEMENTORS.reduce((s, i) => s + i.patients, 0);
+  const avgCoverage = Math.round(IMPLEMENTORS.reduce((s, i) => s + i.coverage, 0) / IMPLEMENTORS.length);
+  const openAlerts = IMPLEMENTORS.reduce((s, i) => s + i.openAlerts, 0);
+
+  const hasFilters = q !== "" || region !== "All regions" || status !== "All statuses";
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Implementors"
-        description="Organisations running immunization programs on lafyai."
+        description="Organisations running immunization programs on LafyAI."
       />
 
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard icon={Building2} label="Total implementors" value={String(IMPLEMENTORS.length)} sub={`${IMPLEMENTORS.filter(i => i.status === "active").length} active`} />
+        <KpiCard icon={Users} label="Total facilities" value={String(totalFacilities)} sub="Across all regions" />
+        <KpiCard icon={Syringe} label="Avg coverage" value={`${avgCoverage}%`} sub="Target 90%" color="text-primary" />
+        <KpiCard icon={AlertTriangle} label="Open AEFI alerts" value={String(openAlerts)} sub="Needs attention" color="text-destructive" />
+      </div>
+
       <Card>
-        <CardHeader className="gap-3">
-          <CardTitle className="text-base">
-            {rows.length} of {IMPLEMENTORS.length} implementors
-          </CardTitle>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base">Implementor directory</CardTitle>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {rows.length === IMPLEMENTORS.length
+                  ? `${IMPLEMENTORS.length} implementors`
+                  : `${rows.length} of ${IMPLEMENTORS.length} implementors`}
+              </p>
+            </div>
+            {hasFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setQ(""); setRegion("All regions"); setStatus("All statuses"); }}
+                className="text-muted-foreground hover:text-foreground self-start sm:self-auto"
+              >
+                <X className="h-3.5 w-3.5" /> Clear filters
+              </Button>
+            )}
+          </div>
+
+          {/* Filters — fixed height so they don't cause layout shifts */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search implementor or lead…"
-                className="pl-9"
+                className="pl-9 h-9"
               />
             </div>
             <Select value={region} onValueChange={setRegion}>
-              <SelectTrigger className="sm:w-48"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {REGIONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="sm:w-44"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
@@ -79,100 +160,151 @@ export function ImplementorsPage() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Implementor</TableHead>
-                <TableHead>Region</TableHead>
-                <TableHead className="text-right">Facilities</TableHead>
-                <TableHead className="text-right">Programs</TableHead>
-                <TableHead className="text-right">Children</TableHead>
-                <TableHead className="text-right">Coverage</TableHead>
-                <TableHead className="text-right">Adherence</TableHead>
-                <TableHead className="text-right">Open SE</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((i) => (
-                <TableRow key={i.slug}>
-                  <TableCell>
-                    <div className="font-medium">{i.name}</div>
-                    <div className="text-xs text-muted-foreground">{i.lead}</div>
-                  </TableCell>
-                  <TableCell>{i.region}</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.facilities}</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.programs}</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.patients.toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.coverage}%</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.adherence}%</TableCell>
-                  <TableCell className="text-right tabular-nums">{i.openAlerts}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={i.status === "active" ? "secondary" : i.status === "suspended" ? "destructive" : "outline"}
-                      className="capitalize"
-                    >
-                      {i.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => setSelected(i)}>View</Button>
-                  </TableCell>
+
+        {/* Scrollable table wrapper — prevents page reflow when data changes */}
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="pl-6 w-56">Implementor</TableHead>
+                  <TableHead className="w-36">Region</TableHead>
+                  <TableHead className="text-right w-24">Facilities</TableHead>
+                  <TableHead className="text-right w-24">Programs</TableHead>
+                  <TableHead className="text-right w-28">Children</TableHead>
+                  <TableHead className="w-36">Coverage</TableHead>
+                  <TableHead className="w-36">Adherence</TableHead>
+                  <TableHead className="text-right w-20">AEFI</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-16 pr-6" />
                 </TableRow>
-              ))}
-              {rows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">
-                    No implementors match these filters.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {rows.map((i) => (
+                  <TableRow key={i.slug}>
+                    <TableCell className="pl-6">
+                      <div className="font-medium">{i.name}</div>
+                      <div className="text-xs text-muted-foreground">{i.lead}</div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{i.region}</TableCell>
+                    <TableCell className="text-right tabular-nums">{i.facilities}</TableCell>
+                    <TableCell className="text-right tabular-nums">{i.programs}</TableCell>
+                    <TableCell className="text-right tabular-nums">{i.patients.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 min-w-[100px]">
+                        <Progress
+                          value={i.coverage}
+                          className="h-1.5 flex-1"
+                        />
+                        <span className="text-xs tabular-nums text-muted-foreground w-9 text-right shrink-0">
+                          {i.coverage}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 min-w-[100px]">
+                        <Progress
+                          value={i.adherence}
+                          className="h-1.5 flex-1"
+                        />
+                        <span className="text-xs tabular-nums text-muted-foreground w-9 text-right shrink-0">
+                          {i.adherence}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {i.openAlerts > 0 ? (
+                        <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-destructive/10 text-destructive text-xs font-semibold px-1.5">
+                          {i.openAlerts}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <StatusDot status={i.status} />
+                    </TableCell>
+                    <TableCell className="pr-6 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelected(i)}
+                        className="h-7 px-3 text-xs"
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={10} className="py-12 text-center">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Search className="h-8 w-8 opacity-40" />
+                        <p className="text-sm font-medium">No implementors match these filters</p>
+                        <Button variant="link" size="sm" className="text-xs" onClick={() => { setQ(""); setRegion("All regions"); setStatus("All statuses"); }}>
+                          Clear filters
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
+      {/* Detail dialog */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{selected?.name}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {selected?.name}
+              {selected && <StatusDot status={selected.status} />}
+            </DialogTitle>
           </DialogHeader>
           {selected && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <p className="text-sm text-muted-foreground">
-                Lead {selected.lead} · {selected.region} · {selected.status}
+                Lead · <span className="font-medium text-foreground">{selected.lead}</span>
+                &nbsp;·&nbsp;{selected.region}
               </p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+
+              <div className="grid grid-cols-3 gap-3">
                 {([
                   ["Facilities", selected.facilities],
                   ["Programs", selected.programs],
                   ["Cohorts", selected.cohorts],
                   ["Children enrolled", selected.patients.toLocaleString()],
-                  ["Open SE alerts", selected.openAlerts],
+                  ["Open AEFI alerts", selected.openAlerts],
                 ] as [string, string | number][]).map(([label, value]) => (
-                  <div key={label} className="rounded-md border p-3">
-                    <div className="text-xs text-muted-foreground">{label}</div>
-                    <div className="text-lg font-semibold tabular-nums">{value}</div>
+                  <div key={label} className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{label}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">{value}</p>
                   </div>
                 ))}
               </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <span>Coverage</span>
-                    <span className="font-semibold tabular-nums">{selected.coverage}%</span>
+
+              <div className="space-y-3 pt-1">
+                {[
+                  { label: "Coverage", value: selected.coverage },
+                  { label: "Adherence", value: selected.adherence },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">{label}</span>
+                      <span className="font-semibold tabular-nums">{value}%</span>
+                    </div>
+                    <Progress value={value} className="h-2" />
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Target 90%
+                      {value >= 90
+                        ? " · ✓ On target"
+                        : ` · ${90 - value} pts below target`}
+                    </p>
                   </div>
-                  <Progress value={selected.coverage} className="mt-1 h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <span>Adherence</span>
-                    <span className="font-semibold tabular-nums">{selected.adherence}%</span>
-                  </div>
-                  <Progress value={selected.adherence} className="mt-1 h-2" />
-                </div>
+                ))}
               </div>
             </div>
           )}

@@ -74,12 +74,12 @@ export const NATIONAL_LOCATIONS = [
 ];
 
 export const CROSS_ALERTS = [
-  { id: "SE-2601", name: "Nana Aba Sey", implementor: "LafyAI Field Ops", facility: "Ridge Hospital", detail: "Localised swelling, child refusing to feed", severity: "critical" as const, reportedAt: "2h ago", status: "escalated" as const },
-  { id: "SE-2604", name: "Yaw Boateng", implementor: "LafyAI Field Ops", facility: "Korle Bu", detail: "Fever 39.1°C, persistent crying", severity: "moderate" as const, reportedAt: "5h ago", status: "open" as const },
-  { id: "SE-2609", name: "Adjoa Nyarko", implementor: "Western Reach Initiative", facility: "Takoradi Hospital", detail: "Vomiting after dose, under observation", severity: "critical" as const, reportedAt: "7h ago", status: "open" as const },
-  { id: "SE-2603", name: "Kweku Otoo", implementor: "Ashanti Child Health", facility: "Madina CHPS", detail: "Rash on left arm, mild fever", severity: "moderate" as const, reportedAt: "9h ago", status: "open" as const },
-  { id: "SE-2519", name: "Ama Serwaa", implementor: "Eastern Health Trust", facility: "Nsawam Gov. Hospital", detail: "Low-grade fever, tolerating feeds", severity: "mild" as const, reportedAt: "1d ago", status: "open" as const },
-  { id: "SE-2517", name: "Kofi Mensah", implementor: "Central EPI Partners", facility: "Tema General", detail: "Injection-site tenderness, resolved <24h", severity: "mild" as const, reportedAt: "2d ago", status: "resolved" as const },
+  { id: "AEFI-2601", name: "Nana Aba Sey", implementor: "LafyAI Field Ops", facility: "Ridge Hospital", detail: "Localised swelling, child refusing to feed", severity: "critical" as const, reportedAt: "2h ago", status: "escalated" as const },
+  { id: "AEFI-2604", name: "Yaw Boateng", implementor: "LafyAI Field Ops", facility: "Korle Bu", detail: "Fever 39.1°C, persistent crying", severity: "moderate" as const, reportedAt: "5h ago", status: "open" as const },
+  { id: "AEFI-2609", name: "Adjoa Nyarko", implementor: "Western Reach Initiative", facility: "Takoradi Hospital", detail: "Vomiting after dose, under observation", severity: "critical" as const, reportedAt: "7h ago", status: "open" as const },
+  { id: "AEFI-2603", name: "Kweku Otoo", implementor: "Ashanti Child Health", facility: "Madina CHPS", detail: "Rash on left arm, mild fever", severity: "moderate" as const, reportedAt: "9h ago", status: "open" as const },
+  { id: "AEFI-2519", name: "Ama Serwaa", implementor: "Eastern Health Trust", facility: "Nsawam Gov. Hospital", detail: "Low-grade fever, tolerating feeds", severity: "mild" as const, reportedAt: "1d ago", status: "open" as const },
+  { id: "AEFI-2517", name: "Kofi Mensah", implementor: "Central EPI Partners", facility: "Tema General", detail: "Injection-site tenderness, resolved <24h", severity: "mild" as const, reportedAt: "2d ago", status: "resolved" as const },
 ];
 
 export type PortalSegment = "implementors" | "health_workers" | "facility_admins";
@@ -165,7 +165,7 @@ export const PLAN_CATALOGUE: {
   blurb: string;
 }[] = [
   { plan: "Starter", pricePerMonth: 250, seatsIncluded: 10, blurb: "Single facility, core coverage tracking" },
-  { plan: "Growth", pricePerMonth: 780, seatsIncluded: 30, blurb: "Multi-facility programs, SE alerting, exports" },
+  { plan: "Growth", pricePerMonth: 780, seatsIncluded: 30, blurb: "Multi-facility programs, AEFI alerting, exports" },
   { plan: "National", pricePerMonth: 2400, seatsIncluded: 60, blurb: "Region-wide rollout, API access, priority support" },
 ];
 

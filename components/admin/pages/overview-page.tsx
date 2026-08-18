@@ -19,12 +19,16 @@ function Kpi({ icon: Icon, label, value, sub }: {
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
-          <Icon className="h-4 w-4 text-primary" />
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+            <div className="mt-1.5 text-3xl font-bold tabular-nums">{value}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
+          </div>
+          <div className="rounded-lg bg-primary/8 p-2 text-primary shrink-0">
+            <Icon className="h-5 w-5" />
+          </div>
         </div>
-        <div className="mt-2 text-3xl font-bold tabular-nums">{value}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
       </CardContent>
     </Card>
   );
@@ -120,14 +124,24 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="National overview" description="Rollup across the platform." />
+      <PageHeader title="National overview" description="Real-time rollup across the entire platform." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <TotalUsersCard />
-        <Kpi icon={Building2} label="Facilities" value={String(facilities)} sub="Across 6 regions" />
+        <Kpi icon={Building2} label="Active facilities" value={String(facilities)} sub="Across 6 regions" />
         <ChildrenEnrolledCard total={patients} />
-        <Kpi icon={Syringe} label="National coverage" value={`${coverage}%`} sub="Target 90%" />
-        <Kpi icon={AlertTriangle} label="Open SE alerts" value={String(openAlerts)} sub="Cross-implementor" />
+        <Kpi
+          icon={Syringe}
+          label="National coverage"
+          value={`${coverage}%`}
+          sub={coverage >= 90 ? "✓ On target" : `${90 - coverage} pts below target`}
+        />
+        <Kpi
+          icon={AlertTriangle}
+          label="Open AEFI alerts"
+          value={String(openAlerts)}
+          sub="Needs attention"
+        />
       </div>
 
       <Card>
