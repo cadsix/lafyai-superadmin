@@ -1,10 +1,15 @@
+import { api } from "@/lib/api";
 import { ImplementorsPage } from "@/components/admin/pages/implementors-page";
+import type { ImplementorListItem } from "@/lib/types";
 
-export const metadata = {
-  title: "Implementors — lafyai super admin",
-  description: "Every implementor on the platform with facilities, programs, enrolment, coverage and adherence.",
-};
+export const metadata = { title: "Implementors — lafyai super admin" };
 
-export default function Page() {
-  return <ImplementorsPage />;
+export default async function Page() {
+  const data = await api
+    .get<{ data: ImplementorListItem[]; pagination: unknown }>(
+      "/admin/implementors?page=1&limit=100",
+    )
+    .catch(() => null);
+
+  return <ImplementorsPage implementors={data?.data ?? []} />;
 }

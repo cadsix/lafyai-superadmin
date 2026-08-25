@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Building2, CheckCircle2, Users, Search, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/lafy/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,8 +18,8 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ADMIN_FACILITIES, IMPLEMENTORS, type AdminFacility } from "@/lib/admin-data";
 import { cn } from "@/lib/utils";
+import type { FacilityListItem } from "@/lib/types";
 
 const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
   Starter:  { label: "Starter",  cls: "bg-muted text-muted-foreground border-border" },
@@ -40,78 +39,85 @@ function Stat({ label, value, sub, icon: Icon }: {
             <p className="mt-1.5 text-3xl font-bold tabular-nums">{value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
           </div>
-          <div className="rounded-lg bg-primary/8 p-2 text-primary">
-            <Icon className="h-5 w-5" />
-          </div>
+          <div className="rounded-lg bg-primary/8 p-2 text-primary"><Icon className="h-5 w-5" /></div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-export function FacilitiesPage() {
-  const [facilities, setFacilities] = useState<AdminFacility[]>(ADMIN_FACILITIES);
+async function createFacility(body: {
+  name: string; region: string; district?: string; type: string;
+  implementor_id: string; plan: string; seats: number;
+}): Promise<FacilityListItem> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/facilities`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? "Failed to create facility");
+  }
+  return res.json();
+}
+
+export function FacilitiesPage({ facilities: initial }: { facilities: FacilityListItem[] }) {
+  const [facilities, setFacilities] = useState(initial);
   const [addOpen, setAddOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
-    name: "", region: "", district: "",
-    type: "CHPS" as AdminFacility["type"],
-    implementor: IMPLEMENTORS[0]?.name ?? "",
-    plan: "Starter" as AdminFacility["plan"],
-    seats: "10",
+    name: "", region: "", district: "", type: "Hospital",
+    implementor_id: "", plan: "Starter", seats: "10",
   });
   const [q, setQ] = useState("");
   const [region, setRegion] = useState("all");
   const [plan, setPlan] = useState("all");
   const [status, setStatus] = useState("all");
 
-  const regions = Array.from(new Set(facilities.map((f) => f.region)));
+  const regions = useMemo(() => Array.from(new Set(facilities.map((f) => f.region))), [facilities]);
 
-  const addFacility = () => {
+  const rows = useMemo(
+    () => facilities.filter((f) => {
+      const matchQ = !q || f.name.toLowerCase().includes(q.toLowerCase()) || f.implementor.toLowerCase().includes(q.toLowerCase());
+      return matchQ &&
+        (region === "all" || f.region === region) &&
+        (plan === "all" || f.plan === plan) &&
+        (status === "all" || f.status.toLowerCase() === status);
+    }),
+    [facilities, q, region, plan, status],
+  );
+
+  const active = facilities.filter((f) => f.status?.toLowerCase() === "active").length;
+  const seats = facilities.reduce((s, f) => s + f.seats, 0);
+  const hasFilters = q !== "" || region !== "all" || plan !== "all" || status !== "all";
+
+  const handleAdd = () => {
     if (!form.name.trim() || !form.region.trim()) {
       toast.error("Facility name and region are required");
       return;
     }
-    setFacilities((prev) => [
-      {
-        id: `fac-${1000 + prev.length + 1}`,
-        name: form.name.trim(),
-        region: form.region.trim(),
-        district: form.district.trim() || form.region.trim(),
-        type: form.type,
-        implementor: form.implementor,
-        plan: form.plan,
-        seats: Number(form.seats) || 0,
-        patients: 0,
-        coverage: 0,
-        active: true,
-        renewsOn: "2027-08-05",
-      },
-      ...prev,
-    ]);
-    setForm({ ...form, name: "", district: "" });
-    setAddOpen(false);
-    toast.success("Facility added");
+    startTransition(async () => {
+      try {
+        const created = await createFacility({
+          name: form.name.trim(),
+          region: form.region.trim(),
+          district: form.district.trim() || undefined,
+          type: form.type,
+          implementor_id: form.implementor_id.trim(),
+          plan: form.plan,
+          seats: Number(form.seats) || 10,
+        });
+        setFacilities((prev) => [created as unknown as FacilityListItem, ...prev]);
+        setForm({ name: "", region: "", district: "", type: "Hospital", implementor_id: "", plan: "Starter", seats: "10" });
+        setAddOpen(false);
+        toast.success("Facility added");
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to add facility");
+      }
+    });
   };
-
-  const rows = useMemo(
-    () =>
-      facilities.filter((f) => {
-        const matchesQ = !q || f.name.toLowerCase().includes(q.toLowerCase()) || f.implementor.toLowerCase().includes(q.toLowerCase());
-        return (
-          matchesQ &&
-          (region === "all" || f.region === region) &&
-          (plan === "all" || f.plan === plan) &&
-          (status === "all" || (status === "active" ? f.active : !f.active))
-        );
-      }),
-    [facilities, q, region, plan, status],
-  );
-
-  const active = facilities.filter((f) => f.active).length;
-  const seats = facilities.reduce((s, f) => s + f.seats, 0);
-  const patients = facilities.reduce((s, f) => s + f.patients, 0);
-
-  const hasFilters = q !== "" || region !== "all" || plan !== "all" || status !== "all";
 
   return (
     <div className="space-y-6">
@@ -144,32 +150,23 @@ export function FacilitiesPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Facility type</Label>
-                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as AdminFacility["type"] })}>
+                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {["Teaching hospital", "Hospital", "Polyclinic", "CHPS"].map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
+                        {["Clinic", "Hospital", "Health System"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Implementor</Label>
-                    <Select value={form.implementor} onValueChange={(v) => setForm({ ...form, implementor: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {IMPLEMENTORS.map((i) => <SelectItem key={i.name} value={i.name}>{i.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="fac-impl">Implementor ID</Label>
+                    <Input id="fac-impl" value={form.implementor_id} onChange={(e) => setForm({ ...form, implementor_id: e.target.value })} placeholder="e.g. impl-001" />
                   </div>
                   <div className="space-y-2">
                     <Label>Plan</Label>
-                    <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v as AdminFacility["plan"] })}>
+                    <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {["Starter", "Growth", "National"].map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
-                        ))}
+                        {["Starter", "Growth", "National"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -181,7 +178,7 @@ export function FacilitiesPage() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-                <Button onClick={addFacility}>Add facility</Button>
+                <Button onClick={handleAdd} disabled={isPending}>Add facility</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -192,7 +189,7 @@ export function FacilitiesPage() {
         <Stat label="Facilities" value={String(facilities.length)} sub={`${regions.length} regions`} icon={Building2} />
         <Stat label="Active" value={String(active)} sub={`${facilities.length - active} inactive`} icon={CheckCircle2} />
         <Stat label="Licensed seats" value={String(seats)} sub="Across all plans" icon={Users} />
-        <Stat label="Children enrolled" value={patients.toLocaleString()} sub="Facility-level totals" icon={Users} />
+        <Stat label="Tracked" value={String(facilities.length)} sub="On platform" icon={Building2} />
       </div>
 
       <Card>
@@ -201,24 +198,15 @@ export function FacilitiesPage() {
             <div>
               <CardTitle className="text-base">Facility directory</CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {rows.length === facilities.length
-                  ? `${facilities.length} facilities`
-                  : `${rows.length} of ${facilities.length} facilities`}
+                {rows.length === facilities.length ? `${facilities.length} facilities` : `${rows.length} of ${facilities.length} facilities`}
               </p>
             </div>
             {hasFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => { setQ(""); setRegion("all"); setPlan("all"); setStatus("all"); }}
-                className="text-muted-foreground self-start sm:self-auto"
-              >
+              <Button variant="ghost" size="sm" onClick={() => { setQ(""); setRegion("all"); setPlan("all"); setStatus("all"); }} className="text-muted-foreground self-start sm:self-auto">
                 <X className="h-3.5 w-3.5" /> Clear filters
               </Button>
             )}
           </div>
-
-          {/* Fixed-height filter row */}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -235,9 +223,7 @@ export function FacilitiesPage() {
               <SelectTrigger className="h-9"><SelectValue placeholder="All plans" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All plans</SelectItem>
-                <SelectItem value="Starter">Starter</SelectItem>
-                <SelectItem value="Growth">Growth</SelectItem>
-                <SelectItem value="National">National</SelectItem>
+                {["Starter", "Growth", "National"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
@@ -261,7 +247,7 @@ export function FacilitiesPage() {
                   <TableHead className="w-44">Implementor</TableHead>
                   <TableHead className="w-28">Plan</TableHead>
                   <TableHead className="text-right w-20">Seats</TableHead>
-                  <TableHead className="text-right w-28">Coverage</TableHead>
+                  <TableHead className="text-right w-28">Completion</TableHead>
                   <TableHead className="w-28">Renews</TableHead>
                   <TableHead className="w-24 pr-6">Status</TableHead>
                 </TableRow>
@@ -269,6 +255,7 @@ export function FacilitiesPage() {
               <TableBody>
                 {rows.map((f) => {
                   const planStyle = PLAN_BADGE[f.plan] ?? PLAN_BADGE.Starter;
+                  const isActive = f.status?.toLowerCase() === "active";
                   return (
                     <TableRow key={f.id}>
                       <TableCell className="pl-6">
@@ -278,32 +265,23 @@ export function FacilitiesPage() {
                       <TableCell className="text-sm text-muted-foreground">{f.region} · {f.district}</TableCell>
                       <TableCell className="text-sm">{f.implementor}</TableCell>
                       <TableCell>
-                        <span className={cn(
-                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                          planStyle.cls,
-                        )}>
-                          {planStyle.label}
-                        </span>
+                        <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", planStyle.cls)}>{planStyle.label}</span>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{f.seats}</TableCell>
                       <TableCell className="text-right">
-                        <span className={cn(
-                          "tabular-nums font-medium text-sm",
-                          f.coverage >= 90 ? "text-emerald-600" : f.coverage >= 75 ? "text-amber-600" : "text-destructive",
+                        <span className={cn("tabular-nums font-medium text-sm",
+                          f.completion_pct >= 90 ? "text-emerald-600" : f.completion_pct >= 75 ? "text-amber-600" : "text-destructive",
                         )}>
-                          {f.coverage}%
+                          {f.completion_pct}%
                         </span>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{f.renewsOn}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{f.renews_on ?? "—"}</TableCell>
                       <TableCell className="pr-6">
-                        <span className={cn(
-                          "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                          f.active
-                            ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
-                            : "bg-muted text-muted-foreground border-border",
+                        <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                          isActive ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" : "bg-muted text-muted-foreground border-border",
                         )}>
-                          <span className={cn("h-1.5 w-1.5 rounded-full", f.active ? "bg-emerald-500" : "bg-muted-foreground")} />
-                          {f.active ? "Active" : "Inactive"}
+                          <span className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-muted-foreground")} />
+                          {isActive ? "Active" : "Inactive"}
                         </span>
                       </TableCell>
                     </TableRow>

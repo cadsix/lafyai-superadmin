@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { MoreHorizontal, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/lafy/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,44 +19,59 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { PLATFORM_USERS, type PlatformUser } from "@/lib/admin-data";
 import { cn, initials } from "@/lib/utils";
+import type { UserListItem } from "@/lib/types";
 
-const STATUS_STYLES: Record<PlatformUser["status"], string> = {
+const STATUS_STYLES: Record<string, string> = {
   active:    "bg-emerald-500/10 text-emerald-700 border-emerald-200",
   invited:   "bg-amber-500/10 text-amber-700 border-amber-200",
   suspended: "bg-destructive/10 text-destructive border-destructive/20",
 };
-
 const ROLE_STYLES: Record<string, string> = {
-  "Super admin":       "bg-violet-500/10 text-violet-700 border-violet-200",
-  "Implementor lead":  "bg-primary/10 text-primary border-primary/20",
-  "Implementor":       "bg-primary/8 text-primary border-primary/15",
-  "Facility admin":    "bg-muted text-muted-foreground border-border",
-  "Health worker":     "bg-muted text-muted-foreground border-border",
+  super_admin:      "bg-violet-500/10 text-violet-700 border-violet-200",
+  implementor:      "bg-primary/10 text-primary border-primary/20",
+  facility_admin:   "bg-muted text-muted-foreground border-border",
+  health_worker:    "bg-muted text-muted-foreground border-border",
 };
 
-export function UsersPage() {
+async function patchUserStatus(id: string, status: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to update user status");
+}
+
+export function UsersPage({ users: initial }: { users: UserListItem[] }) {
+  const [users, setUsers] = useState(initial);
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
-  const [users, setUsers] = useState<PlatformUser[]>(PLATFORM_USERS);
+  const [isPending, startTransition] = useTransition();
 
-  const roles = Array.from(new Set(PLATFORM_USERS.map((u) => u.role)));
+  const roles = useMemo(() => Array.from(new Set(users.map((u) => u.role))), [users]);
 
   const rows = useMemo(
-    () =>
-      users.filter((u) => {
-        const matchesQ =
-          !q || [u.name, u.email, u.organisation, u.scope].join(" ").toLowerCase().includes(q.toLowerCase());
-        return matchesQ && (role === "all" || u.role === role) && (status === "all" || u.status === status);
-      }),
+    () => users.filter((u) => {
+      const matchQ = !q || [u.name, u.email, u.organisation, u.facility_scope]
+        .join(" ").toLowerCase().includes(q.toLowerCase());
+      return matchQ && (role === "all" || u.role === role) && (status === "all" || u.status === status);
+    }),
     [users, q, role, status],
   );
 
-  const update = (id: string, patch: Partial<PlatformUser>, message: string) => {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
-    toast.success(message);
+  const update = (id: string, newStatus: string) => {
+    startTransition(async () => {
+      try {
+        await patchUserStatus(id, newStatus);
+        setUsers((prev) => prev.map((u) => u.id === id ? { ...u, status: newStatus } : u));
+        toast.success(newStatus === "suspended" ? "User suspended" : "User reactivated");
+      } catch {
+        toast.error("Failed to update user");
+      }
+    });
   };
 
   const hasFilters = q !== "" || role !== "all" || status !== "all";
@@ -75,18 +89,11 @@ export function UsersPage() {
             <div>
               <CardTitle className="text-base">Users &amp; roles</CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {rows.length === users.length
-                  ? `${users.length} users`
-                  : `${rows.length} of ${users.length} users`}
+                {rows.length === users.length ? `${users.length} users` : `${rows.length} of ${users.length} users`}
               </p>
             </div>
             {hasFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => { setQ(""); setRole("all"); setStatus("all"); }}
-                className="text-muted-foreground self-start sm:self-auto"
-              >
+              <Button variant="ghost" size="sm" onClick={() => { setQ(""); setRole("all"); setStatus("all"); }} className="text-muted-foreground self-start sm:self-auto">
                 <X className="h-3.5 w-3.5" /> Clear filters
               </Button>
             )}
@@ -100,7 +107,7 @@ export function UsersPage() {
               <SelectTrigger className="h-9"><SelectValue placeholder="All roles" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All roles</SelectItem>
-                {roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                {roles.map((r) => <SelectItem key={r} value={r} className="capitalize">{r.replace(/_/g, " ")}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
@@ -108,7 +115,6 @@ export function UsersPage() {
               <SelectContent>
                 <SelectItem value="all">Any status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="invited">Invited</SelectItem>
                 <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
@@ -145,31 +151,28 @@ export function UsersPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={cn(
-                        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                      <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
                         ROLE_STYLES[u.role] ?? "bg-muted text-muted-foreground border-border",
                       )}>
-                        {u.role}
+                        {u.role.replace(/_/g, " ")}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm truncate">{u.scope}</div>
+                      <div className="text-sm truncate">{u.facility_scope}</div>
                       <div className="text-xs text-muted-foreground">{u.organisation}</div>
                     </TableCell>
                     <TableCell>
-                      <span className={cn(
-                        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
-                        STATUS_STYLES[u.status],
+                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+                        STATUS_STYLES[u.status] ?? "bg-muted text-muted-foreground border-border",
                       )}>
-                        <span className={cn(
-                          "h-1.5 w-1.5 rounded-full",
+                        <span className={cn("h-1.5 w-1.5 rounded-full",
                           u.status === "active" ? "bg-emerald-500" :
                           u.status === "invited" ? "bg-amber-500" : "bg-destructive",
                         )} />
                         {u.status}
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{u.lastActive}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{u.last_active}</TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -180,25 +183,12 @@ export function UsersPage() {
                         <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuLabel>Manage {u.name.split(" ")[0]}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => update(u.id, { role: "Implementor lead" }, `${u.name} is now an implementor lead`)}>
-                            Make implementor lead
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => update(u.id, { role: "Health worker" }, `${u.name} is now a health worker`)}>
-                            Make health worker
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toast.success(`Invite re-sent to ${u.email}`)}>
-                            Resend invite
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
                           {u.status === "suspended" ? (
-                            <DropdownMenuItem onClick={() => update(u.id, { status: "active" }, `${u.name} reactivated`)}>
+                            <DropdownMenuItem onClick={() => update(u.id, "active")} disabled={isPending}>
                               Reactivate account
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => update(u.id, { status: "suspended" }, `${u.name} suspended`)}
-                            >
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => update(u.id, "suspended")} disabled={isPending}>
                               Suspend account
                             </DropdownMenuItem>
                           )}

@@ -1,10 +1,18 @@
+import { api } from "@/lib/api";
 import { ProgramsPage } from "@/components/admin/pages/programs-page";
+import type { ProgramListItem } from "@/lib/types";
 
-export const metadata = {
-  title: "Programs — lafyai super admin",
-  description: "Every immunization program on the platform with cohorts, enrolment and completion.",
+export const metadata = { title: "Programs — lafyai super admin" };
+
+type ProgramsResponse = {
+  summary: unknown;
+  data: ProgramListItem[];
 };
 
-export default function Page() {
-  return <ProgramsPage />;
+export default async function Page() {
+  const data = await api
+    .get<ProgramsResponse>("/admin/programs")
+    .catch(() => null);
+
+  return <ProgramsPage programs={data?.data ?? []} />;
 }

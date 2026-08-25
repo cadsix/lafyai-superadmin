@@ -1,10 +1,10 @@
+import { api } from "@/lib/api";
 import { InsightsPage } from "@/components/admin/pages/insights-page";
+import type { InsightsResponse } from "@/lib/types";
 
-export const metadata = {
-  title: "Insights — lafyai super admin",
-  description: "Platform-wide insights: engagement trends, channel performance and recommended actions.",
-};
+export const metadata = { title: "Insights — lafyai super admin" };
 
-export default function Page() {
-  return <InsightsPage />;
+export default async function Page() {
+  const data = await api.get<InsightsResponse>("/admin/insights").catch(() => null);
+  return <InsightsPage data={data} />;
 }

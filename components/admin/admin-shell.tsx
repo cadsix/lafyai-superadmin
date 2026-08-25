@@ -22,8 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
-import { initials } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,55 +35,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CROSS_ALERTS } from "@/lib/admin-data";
+import { useSession } from "@/lib/auth-context";
+import { logoutAction } from "@/lib/auth";
+import type { AEFIAlert } from "@/lib/types";
 
 const NAV = [
-  { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/implementors", label: "Implementors", icon: Building2 },
-  { href: "/admin/facilities", label: "Facilities", icon: MapPin },
-  { href: "/admin/programs", label: "Programs", icon: FolderKanban },
-  { href: "/admin/users", label: "User management", icon: ShieldCheck },
-  { href: "/admin/billing", label: "Billing & Subscription", icon: CreditCard },
-  { href: "/admin/messages", label: "Message Log", icon: MessageSquare },
-  { href: "/admin/insights", label: "Insights", icon: Sparkles },
-  { href: "/admin/se-alerts", label: "AEFI Alerts", icon: AlertTriangle },
-  { href: "/admin/coverage", label: "Coverage", icon: ClipboardList },
-  { href: "/admin/audit", label: "Audit Log", icon: ClipboardList },
+  { href: "/admin/overview",      label: "Overview",              icon: LayoutDashboard },
+  { href: "/admin/implementors",  label: "Implementors",          icon: Building2 },
+  { href: "/admin/facilities",    label: "Facilities",            icon: MapPin },
+  { href: "/admin/programs",      label: "Programs",              icon: FolderKanban },
+  { href: "/admin/users",         label: "User management",       icon: ShieldCheck },
+  { href: "/admin/billing",       label: "Billing & Subscription",icon: CreditCard },
+  { href: "/admin/messages",      label: "Message Log",           icon: MessageSquare },
+  { href: "/admin/insights",      label: "Insights",              icon: Sparkles },
+  { href: "/admin/se-alerts",     label: "AEFI Alerts",           icon: AlertTriangle },
+  { href: "/admin/coverage",      label: "Coverage",              icon: ClipboardList },
+  { href: "/admin/audit",         label: "Audit Log",             icon: ClipboardList },
 ] as const;
 
-// Stub user — replace with real session data from your API
-const STUB_USER = {
-  name: "Akosua Mensah",
-  email: "akosua@lafyai.org",
-  organisation: "lafyai",
-};
-
-function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarInner({
+  onNavigate,
+}: {
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  const handleSignOut = () => {
-    // TODO: call your sign-out API endpoint
-    toast.success("Signed out");
-    router.push("/auth");
-  };
 
   return (
     <>
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
-        <div className="relative h-12 w-12 shrink-0">
-          <Image
-            src="/icons/lafyai-icon.png"
-            alt="LafyAI logo"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-        <div className="leading-tight">
-          <div className="font-semibold tracking-tight">lafyai</div>
-          <div className="text-[11px] text-sidebar-foreground/60">Super admin console</div>
-        </div>
+      <div className="flex flex-col px-4 pt-4 pb-3 border-b border-sidebar-border">
+        {/* lafy-name.png 642×258 → fits ~200px wide in a 256px sidebar */}
+        <Image
+          src="/icons/lafy-name.png"
+          alt="LafyAI"
+          width={120}
+          height={48}
+          priority
+        />
+        <span className="mt-1.5 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
+          Super admin console
+        </span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -111,28 +100,35 @@ function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="p-3 border-t border-sidebar-border">
-        <button
-          onClick={() => { onNavigate?.(); handleSignOut(); }}
-          className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </button>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            onClick={() => onNavigate?.()}
+            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </form>
       </div>
     </>
   );
 }
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  alerts = [],
+}: {
+  children: React.ReactNode;
+  alerts?: AEFIAlert[];
+}) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const user = useSession();
 
-  const openAlerts = CROSS_ALERTS.filter((a) => a.status !== "resolved").slice(0, 5);
-
-  const handleSignOut = () => {
-    toast.success("Signed out");
-    router.push("/auth");
-  };
+  const displayName = user?.name ?? "Admin";
+  const displayOrg = user?.facility_name ?? "lafyai";
+  const openAlerts = alerts.slice(0, 5);
 
   return (
     <div className="min-h-screen w-full bg-muted/40 flex">
@@ -144,7 +140,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="h-16 border-b bg-background flex items-center gap-3 px-4 md:px-8">
-          {/* Mobile menu trigger */}
+          {/* Mobile menu */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation">
@@ -160,8 +156,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Sheet>
 
           <div className="md:hidden font-semibold flex items-center gap-2">
-            <div className="relative h-8 w-8">
-              <Image src="/icons/lafyai-icon.png" alt="LafyAI" fill className="object-contain" />
+            <div className="relative h-10 w-10">
+              <Image src="/icons/lafyai-icon2.png" alt="LafyAI" fill className="object-contain" />
             </div>
             lafyai
           </div>
@@ -171,7 +167,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Badge>
 
           <div className="ml-auto flex items-center gap-2">
-            {/* Notifications */}
+            {/* AEFI bell */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
@@ -189,15 +185,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   </Badge>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {openAlerts.length === 0 && (
+                  <DropdownMenuItem disabled className="text-muted-foreground">
+                    No open alerts
+                  </DropdownMenuItem>
+                )}
                 {openAlerts.map((a) => (
                   <DropdownMenuItem
                     key={a.id}
                     onClick={() => router.push("/admin/se-alerts")}
                     className="flex flex-col items-start gap-0.5 py-2"
                   >
-                    <span className="text-sm font-medium truncate">{a.detail}</span>
+                    <span className="text-sm font-medium truncate">{a.patient_name}</span>
                     <span className="text-[11px] text-muted-foreground">
-                      {a.implementor} · {a.facility} · {a.reportedAt}
+                      {a.facility_name} · {a.severity} · {new Date(a.created_at).toLocaleDateString()}
                     </span>
                   </DropdownMenuItem>
                 ))}
@@ -219,12 +220,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   aria-label="Open profile menu"
                 >
                   <div className="hidden sm:flex flex-col items-end leading-tight mr-1">
-                    <span className="text-sm font-medium">{STUB_USER.name}</span>
-                    <span className="text-xs text-muted-foreground">{STUB_USER.organisation}</span>
+                    <span className="text-sm font-medium">{displayName}</span>
+                    <span className="text-xs text-muted-foreground">{displayOrg}</span>
                   </div>
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {initials(STUB_USER.name)}
+                      {initials(displayName)}
                     </AvatarFallback>
                   </Avatar>
                 </button>
@@ -232,8 +233,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span>{STUB_USER.name}</span>
-                    <span className="text-xs font-normal text-muted-foreground">{STUB_USER.email}</span>
+                    <span>{displayName}</span>
+                    <span className="text-xs font-normal text-muted-foreground capitalize">
+                      {user?.role?.replace(/_/g, " ") ?? "Super admin"}
+                    </span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -241,12 +244,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <UserIcon className="h-4 w-4" /> User management
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="h-4 w-4" /> Sign out
-                </DropdownMenuItem>
+                <form action={logoutAction}>
+                  <DropdownMenuItem asChild>
+                    <button
+                      type="submit"
+                      className="w-full text-destructive focus:text-destructive flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" /> Sign out
+                    </button>
+                  </DropdownMenuItem>
+                </form>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

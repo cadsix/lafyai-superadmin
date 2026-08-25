@@ -2,26 +2,40 @@
 
 import { useState } from "react";
 import {
-  AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
 import { Building2, Users, Syringe, AlertTriangle } from "lucide-react";
 
 import { PageHeader } from "@/components/lafy/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  IMPLEMENTORS, NATIONAL_TREND, USER_SEGMENTS, TOTAL_PLATFORM_USERS, ENROLMENT_GENDER,
-} from "@/lib/admin-data";
 import { cn } from "@/lib/utils";
+import type { OverviewSummary, OverviewTrendPoint } from "@/lib/types";
 
-function Kpi({ icon: Icon, label, value, sub }: {
-  icon: typeof Users; label: string; value: string; sub: string;
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  sub: string;
 }) {
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {label}
+            </span>
             <div className="mt-1.5 text-3xl font-bold tabular-nums">{value}</div>
             <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
           </div>
@@ -34,28 +48,43 @@ function Kpi({ icon: Icon, label, value, sub }: {
   );
 }
 
-function TotalUsersCard() {
-  const [segment, setSegment] = useState<"all" | (typeof USER_SEGMENTS)[number]["key"]>("all");
-  const selected = USER_SEGMENTS.find((s) => s.key === segment);
-  const total = selected ? selected.total : TOTAL_PLATFORM_USERS;
-  const active = selected ? selected.active : USER_SEGMENTS.reduce((s, u) => s + u.active, 0);
+function TotalUsersCard({
+  total,
+  active,
+  breakdown,
+}: {
+  total: number;
+  active: number;
+  breakdown: { implementors: number; health_workers: number; facilities: number };
+}) {
+  type Seg = "all" | "implementors" | "health_workers" | "facilities";
+  const [segment, setSegment] = useState<Seg>("all");
 
-  const chips: { key: typeof segment; label: string }[] = [
-    { key: "all", label: "All" },
-    ...USER_SEGMENTS.map((s) => ({ key: s.key as typeof segment, label: s.label })),
+  const chips: { key: Seg; label: string; count: number }[] = [
+    { key: "all", label: "All", count: total },
+    { key: "implementors", label: "Implementors", count: breakdown.implementors },
+    { key: "health_workers", label: "Health workers", count: breakdown.health_workers },
+    { key: "facilities", label: "Facilities", count: breakdown.facilities },
   ];
+
+  const selected = chips.find((c) => c.key === segment)!;
 
   return (
     <Card className="sm:col-span-2">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total users · all portals</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Total users · all portals
+          </span>
           <Users className="h-4 w-4 text-primary" />
         </div>
-        <div className="mt-2 text-3xl font-bold tabular-nums">{total.toLocaleString()}</div>
+        <div className="mt-2 text-3xl font-bold tabular-nums">
+          {selected.count.toLocaleString()}
+        </div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {active.toLocaleString()} active
-          {selected ? ` · +${selected.newThisMonth} new this month` : " across every portal"}
+          {segment === "all"
+            ? `${active.toLocaleString()} active across every portal`
+            : `${selected.count.toLocaleString()} ${selected.label.toLowerCase()}`}
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {chips.map((c) => (
@@ -78,17 +107,25 @@ function TotalUsersCard() {
   );
 }
 
-function ChildrenEnrolledCard({ total }: { total: number }) {
+function ChildrenEnrolledCard({
+  total,
+  male,
+  female,
+}: {
+  total: number;
+  male: number;
+  female: number;
+}) {
   const [gender, setGender] = useState<"all" | "male" | "female">("all");
-  const male = Math.round(total * ENROLMENT_GENDER.maleShare);
-  const female = total - male;
   const value = gender === "male" ? male : gender === "female" ? female : total;
 
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Children enrolled</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Children enrolled
+          </span>
           <Users className="h-4 w-4 text-primary" />
         </div>
         <div className="mt-2 text-3xl font-bold tabular-nums">{value.toLocaleString()}</div>
@@ -116,49 +153,119 @@ function ChildrenEnrolledCard({ total }: { total: number }) {
   );
 }
 
-export function OverviewPage() {
-  const facilities = IMPLEMENTORS.reduce((s, i) => s + i.facilities, 0);
-  const patients = IMPLEMENTORS.reduce((s, i) => s + i.patients, 0);
-  const coverage = Math.round(IMPLEMENTORS.reduce((s, i) => s + i.coverage, 0) / IMPLEMENTORS.length);
-  const openAlerts = IMPLEMENTORS.reduce((s, i) => s + i.openAlerts, 0);
+export function OverviewPage({
+  summary,
+  trends,
+}: {
+  summary: OverviewSummary | null;
+  trends: OverviewTrendPoint[];
+}) {
+  // Fallback zeros if API is down
+  const s = summary ?? {
+    total_users: {
+      total_count: 0,
+      active_count: 0,
+      breakdown: { implementors: 0, health_workers: 0, facilities: 0 },
+    },
+    facilities: { total_count: 0, regions_count: 0 },
+    children_enrolled: { total_count: 0, male_count: 0, female_count: 0 },
+    national_coverage: { current_pct: 0, target_pct: 90 },
+    open_se_alerts: { total_open: 0, scope: "" },
+  };
+
+  const coverage = s.national_coverage.current_pct;
+  const target = s.national_coverage.target_pct;
+
+  // Normalise trend keys for recharts
+  const chartData = trends.map((p) => ({
+    month: p.month,
+    coverage: p.coverage_pct,
+    adherence: p.adherence_pct,
+  }));
 
   return (
     <div className="space-y-6">
-      <PageHeader title="National overview" description="Real-time rollup across the entire platform." />
+      <PageHeader
+        title="National overview"
+        description="Real-time rollup across the entire platform."
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <TotalUsersCard />
-        <Kpi icon={Building2} label="Active facilities" value={String(facilities)} sub="Across 6 regions" />
-        <ChildrenEnrolledCard total={patients} />
+        <TotalUsersCard
+          total={s.total_users.total_count}
+          active={s.total_users.active_count}
+          breakdown={s.total_users.breakdown}
+        />
+        <Kpi
+          icon={Building2}
+          label="Active facilities"
+          value={String(s.facilities.total_count)}
+          sub={`Across ${s.facilities.regions_count} regions`}
+        />
+        <ChildrenEnrolledCard
+          total={s.children_enrolled.total_count}
+          male={s.children_enrolled.male_count}
+          female={s.children_enrolled.female_count}
+        />
         <Kpi
           icon={Syringe}
           label="National coverage"
           value={`${coverage}%`}
-          sub={coverage >= 90 ? "✓ On target" : `${90 - coverage} pts below target`}
+          sub={
+            coverage >= target
+              ? "✓ On target"
+              : `${(target - coverage).toFixed(1)} pts below target`
+          }
         />
         <Kpi
           icon={AlertTriangle}
           label="Open AEFI alerts"
-          value={String(openAlerts)}
+          value={String(s.open_se_alerts.total_open)}
           sub="Needs attention"
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">National coverage & adherence trend</CardTitle>
+          <CardTitle className="text-base">
+            National coverage &amp; adherence trend
+          </CardTitle>
         </CardHeader>
         <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={NATIONAL_TREND}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} unit="%" />
-              <Tooltip wrapperStyle={{ zIndex: 50 }} />
-              <Area type="monotone" dataKey="coverage" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.18} name="Coverage" />
-              <Area type="monotone" dataKey="adherence" stroke="var(--muted-foreground)" fill="var(--muted-foreground)" fillOpacity={0.1} name="Adherence" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {chartData.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+              No trend data available
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border)"
+                  vertical={false}
+                />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} unit="%" />
+                <Tooltip wrapperStyle={{ zIndex: 50 }} />
+                <Area
+                  type="monotone"
+                  dataKey="coverage"
+                  stroke="var(--primary)"
+                  fill="var(--primary)"
+                  fillOpacity={0.18}
+                  name="Coverage"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="adherence"
+                  stroke="var(--muted-foreground)"
+                  fill="var(--muted-foreground)"
+                  fillOpacity={0.1}
+                  name="Adherence"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>
