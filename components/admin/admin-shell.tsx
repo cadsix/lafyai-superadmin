@@ -70,6 +70,7 @@ function SidebarInner({
           width={120}
           height={48}
           priority
+          style={{ width: "120px", height: "auto" }}
         />
         <span className="mt-1.5 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
           Super admin console
