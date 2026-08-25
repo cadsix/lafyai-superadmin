@@ -65,15 +65,11 @@ function KpiCard({ icon: Icon, label, value, sub, color = "text-primary" }: {
 }
 
 async function patchStatus(id: string, status: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/implementors/${id}/status`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-      credentials: "include",
-    },
-  );
+  const res = await fetch(`/api/proxy/admin/implementors/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
   if (!res.ok) throw new Error("Failed to update status");
 }
 

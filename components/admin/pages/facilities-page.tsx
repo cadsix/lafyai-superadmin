@@ -50,11 +50,10 @@ async function createFacility(body: {
   name: string; region: string; district?: string; type: string;
   implementor_id: string; plan: string; seats: number;
 }): Promise<FacilityListItem> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/facilities`, {
+  const res = await fetch(`/api/proxy/admin/facilities`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    credentials: "include",
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

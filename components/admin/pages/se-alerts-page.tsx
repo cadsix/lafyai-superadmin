@@ -50,15 +50,11 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 async function resolveAlert(id: string, note: string): Promise<AEFIAlert> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/aefi-alerts/${id}/resolve`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resolution_note: note }),
-      credentials: "include",
-    },
-  );
+  const res = await fetch(`/api/proxy/aefi-alerts/${id}/resolve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resolution_note: note }),
+  });
   if (!res.ok) throw new Error("Failed to resolve alert");
   return res.json();
 }

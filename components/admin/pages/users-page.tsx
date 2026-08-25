@@ -35,13 +35,15 @@ const ROLE_STYLES: Record<string, string> = {
 };
 
 async function patchUserStatus(id: string, status: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${id}/status`, {
+  const res = await fetch(`/api/proxy/admin/users/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
-    credentials: "include",
   });
-  if (!res.ok) throw new Error("Failed to update user status");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail ?? "Failed to update user status");
+  }
 }
 
 export function UsersPage({ users: initial }: { users: UserListItem[] }) {

@@ -61,11 +61,10 @@ async function createBillingAccount(body: {
   subscriber_type: string; subscriber_name: string; account_name?: string;
   plan: string; billing_cycle: string; seats: number; facilities?: number;
 }): Promise<BillingAccountItem> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/billing/accounts`, {
+  const res = await fetch(`/api/proxy/admin/billing/accounts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    credentials: "include",
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
