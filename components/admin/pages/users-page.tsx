@@ -53,8 +53,9 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
   const [isPending, startTransition] = useTransition();
 
   // Never show super_admin accounts — they cannot be managed here
+  // API returns role as "Super admin" (display string, not enum)
   const manageable = useMemo(
-    () => users.filter((u) => u.role !== "super_admin"),
+    () => users.filter((u) => u.role.toLowerCase().replace(/\s/g, "_") !== "super_admin" && u.role !== "Super admin"),
     [users],
   );
 
