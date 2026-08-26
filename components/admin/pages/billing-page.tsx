@@ -160,7 +160,7 @@ export function BillingPage({
                     <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {plans.map((p) => <SelectItem key={p.plan} value={p.plan}>{p.plan} — ${p.price_per_month}/mo</SelectItem>)}
+                        {plans.map((p) => <SelectItem key={p.plan} value={p.plan}>{p.plan} — ₵{p.price_per_month}/mo</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -196,7 +196,7 @@ export function BillingPage({
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Monthly recurring revenue" value={`$${m.mrr_usd.toLocaleString()}`} sub="Active + trial accounts" icon={Wallet} />
+        <Stat label="Monthly recurring revenue" value={`₵${m.mrr_usd.toLocaleString()}`} sub="Active + trial accounts" icon={Wallet} />
         <Stat label="Accounts" value={String(m.total_accounts)} sub={`${m.active_accounts} active`} icon={CreditCard} />
         <Stat label="Licensed seats" value={String(m.licensed_seats)} sub="Across all plans" icon={TrendingUp} />
         <Stat label="Past due" value={String(m.past_due_accounts)} sub="Needs follow-up" icon={AlertCircle} highlight={m.past_due_accounts > 0} />
@@ -211,7 +211,7 @@ export function BillingPage({
                 <div key={p.plan} className="rounded-lg border bg-muted/20 p-3 hover:bg-muted/40 transition-colors">
                   <div className="flex items-center justify-between">
                     <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold", PLAN_STYLES[p.plan] ?? "bg-muted text-muted-foreground border-border")}>{p.plan}</span>
-                    <span className="text-sm font-bold tabular-nums">${p.price_per_month}<span className="font-normal text-muted-foreground text-xs">/mo</span></span>
+                    <span className="text-sm font-bold tabular-nums">₵{p.price_per_month}<span className="font-normal text-muted-foreground text-xs">/mo</span></span>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">{p.description}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{p.seats_included} seats included</p>
@@ -250,7 +250,7 @@ export function BillingPage({
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{a.facilities_count}</TableCell>
                       <TableCell className="text-right tabular-nums">{a.seats}</TableCell>
-                      <TableCell className="text-right tabular-nums font-medium">${a.amount.toLocaleString()}</TableCell>
+                      <TableCell className="text-right tabular-nums font-medium">₵{a.amount.toLocaleString()}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{a.billing_cycle}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{a.next_invoice ?? "—"}</TableCell>
                       <TableCell className="pr-6">
