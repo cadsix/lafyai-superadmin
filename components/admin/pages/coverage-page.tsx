@@ -51,18 +51,27 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub: st
 
 export function CoveragePage({
   summary,
-  antigens,
+  antigens: rawAntigens,
 }: {
   summary: CoverageSummary | null;
   antigens: CoverageAntigenItem[];
 }) {
+  // Deduplicate by antigen name (API returns duplicates)
+  const seen = new Set<string>();
+  const antigens = rawAntigens.filter((a) => {
+    if (seen.has(a.antigen)) return false;
+    seen.add(a.antigen);
+    return true;
+  });
+
   const target = summary?.target_pct ?? TARGET;
   const avgCoverage = summary?.avg_antigen_coverage_pct ?? (
     antigens.length
-      ? Math.round(antigens.reduce((s, a) => s + a.coverage_pct, 0) / antigens.length)
+      ? antigens.reduce((s, a) => s + a.coverage_pct, 0) / antigens.length
       : 0
   );
   const onTarget = antigens.filter((a) => a.coverage_pct >= target).length;
+  const allZero = antigens.every((a) => a.coverage_pct === 0);
 
   return (
     <div className="space-y-6">
@@ -88,6 +97,19 @@ export function CoveragePage({
           sub={`≥ ${target}% coverage`}
         />
       </div>
+
+      {allZero && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-start gap-3">
+          <span className="text-amber-500 text-lg leading-none mt-0.5">⚠</span>
+          <div>
+            <p className="text-sm font-semibold text-amber-800">No administered doses recorded yet</p>
+            <p className="mt-0.5 text-xs text-amber-700">
+              Coverage will populate here once health workers begin marking doses as administered.
+              All {antigens.length} antigens are tracked and ready.
+            </p>
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

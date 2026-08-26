@@ -178,10 +178,15 @@ export function OverviewPage({
 
   // Normalise trend keys for recharts
   const chartData = trends.map((p) => ({
-    month: p.month,
-    coverage: p.coverage_pct,
-    adherence: p.adherence_pct,
+    month: p.month.length > 7 ? p.month.slice(0, 7) : p.month,
+    coverage: Number(p.coverage_pct?.toFixed(1) ?? 0),
+    adherence: Number(p.adherence_pct?.toFixed(1) ?? 0),
   }));
+
+  // Derive a sensible Y-axis domain from actual data
+  const allValues = chartData.flatMap((d) => [d.coverage, d.adherence]).filter(Boolean);
+  const minVal = allValues.length ? Math.max(0, Math.floor(Math.min(...allValues) / 10) * 10 - 10) : 0;
+  const maxVal = allValues.length ? Math.min(100, Math.ceil(Math.max(...allValues) / 10) * 10 + 5) : 100;
 
   return (
     <div className="space-y-6">
@@ -230,6 +235,18 @@ export function OverviewPage({
           <CardTitle className="text-base">
             National coverage &amp; adherence trend
           </CardTitle>
+          {chartData.length > 0 && (
+            <div className="flex items-center gap-4 mt-1">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-2.5 w-2.5 rounded-sm inline-block" style={{ background: "#185547" }} />
+                Coverage
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-2.5 w-2.5 rounded-sm inline-block" style={{ background: "#CEEBA2" }} />
+                Adherence
+              </span>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="h-72">
           {chartData.length === 0 ? (
@@ -238,30 +255,60 @@ export function OverviewPage({
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--border)"
-                  vertical={false}
+              <AreaChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gradCoverage" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#185547" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#185547" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="gradAdherence" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#CEEBA2" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#CEEBA2" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: "#6b7280" }}
+                  axisLine={false}
+                  tickLine={false}
                 />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} unit="%" />
-                <Tooltip wrapperStyle={{ zIndex: 50 }} />
+                <YAxis
+                  domain={[minVal, maxVal]}
+                  tick={{ fontSize: 11, fill: "#6b7280" }}
+                  axisLine={false}
+                  tickLine={false}
+                  unit="%"
+                  width={38}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid #e5e7eb",
+                    fontSize: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  }}
+                  formatter={(val: number) => [`${val}%`]}
+                />
                 <Area
                   type="monotone"
                   dataKey="coverage"
-                  stroke="var(--primary)"
-                  fill="var(--primary)"
-                  fillOpacity={0.18}
+                  stroke="#185547"
+                  strokeWidth={2}
+                  fill="url(#gradCoverage)"
                   name="Coverage"
+                  dot={{ r: 3, fill: "#185547", strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
                 />
                 <Area
                   type="monotone"
                   dataKey="adherence"
-                  stroke="var(--muted-foreground)"
-                  fill="var(--muted-foreground)"
-                  fillOpacity={0.1}
+                  stroke="#CEEBA2"
+                  strokeWidth={2}
+                  fill="url(#gradAdherence)"
                   name="Adherence"
+                  dot={{ r: 3, fill: "#CEEBA2", strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
                 />
               </AreaChart>
             </ResponsiveContainer>

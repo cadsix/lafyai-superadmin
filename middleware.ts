@@ -8,14 +8,14 @@ export function middleware(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin");
   const isAuthRoute = pathname.startsWith("/auth");
 
-  // Redirect unauthenticated users away from /admin
+  // No token → send to login
   if (isAdminRoute && !token) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
     return NextResponse.redirect(url);
   }
 
-  // Redirect already-authenticated users away from /auth
+  // Already logged in → skip login page
   if (isAuthRoute && token) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/overview";

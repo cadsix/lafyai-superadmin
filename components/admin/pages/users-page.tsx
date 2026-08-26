@@ -28,10 +28,9 @@ const STATUS_STYLES: Record<string, string> = {
   suspended: "bg-destructive/10 text-destructive border-destructive/20",
 };
 const ROLE_STYLES: Record<string, string> = {
-  super_admin:      "bg-violet-500/10 text-violet-700 border-violet-200",
-  implementor:      "bg-primary/10 text-primary border-primary/20",
-  facility_admin:   "bg-muted text-muted-foreground border-border",
-  health_worker:    "bg-muted text-muted-foreground border-border",
+  implementor:    "bg-primary/10 text-primary border-primary/20",
+  facility_admin: "bg-muted text-muted-foreground border-border",
+  health_worker:  "bg-muted text-muted-foreground border-border",
 };
 
 async function patchUserStatus(id: string, status: string) {
@@ -53,15 +52,26 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
   const [status, setStatus] = useState("all");
   const [isPending, startTransition] = useTransition();
 
-  const roles = useMemo(() => Array.from(new Set(users.map((u) => u.role))), [users]);
+  // Never show super_admin accounts — they cannot be managed here
+  const manageable = useMemo(
+    () => users.filter((u) => u.role !== "super_admin"),
+    [users],
+  );
+
+  const roles = useMemo(
+    () => Array.from(new Set(manageable.map((u) => u.role))),
+    [manageable],
+  );
 
   const rows = useMemo(
-    () => users.filter((u) => {
+    () => manageable.filter((u) => {
       const matchQ = !q || [u.name, u.email, u.organisation, u.facility_scope]
         .join(" ").toLowerCase().includes(q.toLowerCase());
-      return matchQ && (role === "all" || u.role === role) && (status === "all" || u.status === status);
+      return matchQ &&
+        (role === "all" || u.role === role) &&
+        (status === "all" || u.status === status);
     }),
-    [users, q, role, status],
+    [manageable, q, role, status],
   );
 
   const update = (id: string, newStatus: string) => {
@@ -91,11 +101,17 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
             <div>
               <CardTitle className="text-base">Users &amp; roles</CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {rows.length === users.length ? `${users.length} users` : `${rows.length} of ${users.length} users`}
+                {rows.length === manageable.length
+                  ? `${manageable.length} users`
+                  : `${rows.length} of ${manageable.length} users`}
               </p>
             </div>
             {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={() => { setQ(""); setRole("all"); setStatus("all"); }} className="text-muted-foreground self-start sm:self-auto">
+              <Button
+                variant="ghost" size="sm"
+                onClick={() => { setQ(""); setRole("all"); setStatus("all"); }}
+                className="text-muted-foreground self-start sm:self-auto"
+              >
                 <X className="h-3.5 w-3.5" /> Clear filters
               </Button>
             )}
@@ -103,13 +119,22 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
           <div className="grid gap-2 sm:grid-cols-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, scope" className="pl-9 h-9" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search name, email, scope"
+                className="pl-9 h-9"
+              />
             </div>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="h-9"><SelectValue placeholder="All roles" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All roles</SelectItem>
-                {roles.map((r) => <SelectItem key={r} value={r} className="capitalize">{r.replace(/_/g, " ")}</SelectItem>)}
+                {roles.map((r) => (
+                  <SelectItem key={r} value={r} className="capitalize">
+                    {r.replace(/_/g, " ")}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
@@ -153,7 +178,8 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+                      <span className={cn(
+                        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
                         ROLE_STYLES[u.role] ?? "bg-muted text-muted-foreground border-border",
                       )}>
                         {u.role.replace(/_/g, " ")}
@@ -164,7 +190,8 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
                       <div className="text-xs text-muted-foreground">{u.organisation}</div>
                     </TableCell>
                     <TableCell>
-                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+                      <span className={cn(
+                        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
                         STATUS_STYLES[u.status] ?? "bg-muted text-muted-foreground border-border",
                       )}>
                         <span className={cn("h-1.5 w-1.5 rounded-full",
@@ -186,11 +213,18 @@ export function UsersPage({ users: initial }: { users: UserListItem[] }) {
                           <DropdownMenuLabel>Manage {u.name.split(" ")[0]}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           {u.status === "suspended" ? (
-                            <DropdownMenuItem onClick={() => update(u.id, "active")} disabled={isPending}>
+                            <DropdownMenuItem
+                              onClick={() => update(u.id, "active")}
+                              disabled={isPending}
+                            >
                               Reactivate account
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => update(u.id, "suspended")} disabled={isPending}>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => update(u.id, "suspended")}
+                              disabled={isPending}
+                            >
                               Suspend account
                             </DropdownMenuItem>
                           )}

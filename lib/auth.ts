@@ -61,6 +61,15 @@ export async function loginAction(
 
   try {
     const data = await loginRequest(email, password);
+
+    // This portal is super admin only — block all other roles immediately
+    if (data.role !== "super_admin") {
+      return {
+        error:
+          "Access denied. This portal is restricted to super admins only.",
+      };
+    }
+
     const cookieStore = await cookies();
     cookieStore.set(COOKIE, data.access_token, COOKIE_OPTS);
   } catch (err: unknown) {
