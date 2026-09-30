@@ -48,11 +48,11 @@ export default function AuthPage() {
           {/* Logo */}
           <div className="mb-12">
             <Image
-              src="/icons/lafy-name.png"
-              alt="Lafy AI"
-              width={110}
+              src="/images/logos/getvaxxed-logoN.PNG"
+              alt="GetVaxxed"
+              width={140}
               height={44}
-              style={{ width: "110px", height: "auto" }}
+              style={{ width: "140px", height: "auto" }}
               className="brightness-0 invert"
               priority
             />
@@ -60,7 +60,7 @@ export default function AuthPage() {
 
           {/* Headline */}
           <h1 className="text-[34px] xl:text-[38px] font-bold text-white leading-tight mb-5">
-            Adapt Lafy AI to your programme&apos;s needs with flexible operations.
+            Adapt GetVaxxed to your programme&apos;s needs with flexible operations.
           </h1>
 
           {/* Body */}
@@ -103,11 +103,11 @@ export default function AuthPage() {
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center px-6 pt-6 pb-2">
           <Image
-            src="/icons/lafy-name.png"
-            alt="Lafy AI"
-            width={100}
+            src="/images/logos/getvaxxed-logoN.PNG"
+            alt="GetVaxxed"
+            width={120}
             height={40}
-            style={{ width: "100px", height: "auto" }}
+            style={{ width: "120px", height: "auto" }}
             priority
           />
         </div>
@@ -148,7 +148,7 @@ export default function AuthPage() {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="you@lafy.health"
+                  placeholder="you@getvaxxed.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setTouched((t) => ({ ...t, email: true }))}
@@ -249,7 +249,7 @@ export default function AuthPage() {
             <div className="flex items-center gap-3 mt-6">
               <div className="flex-1 h-px bg-slate-100" />
               <p className="text-[13px] text-slate-400 whitespace-nowrap">
-                © {new Date().getFullYear()} LafyAI · Super Admin
+                © {new Date().getFullYear()} GetVaxxed · Super Admin
               </p>
               <div className="flex-1 h-px bg-slate-100" />
             </div>

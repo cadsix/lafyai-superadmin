@@ -17,7 +17,7 @@ export type Implementor = {
 };
 
 export const IMPLEMENTORS: Implementor[] = [
-  { slug: "lafy-field-ops", name: "LafyAI Field Ops", lead: "Amara Okoye", region: "Greater Accra", facilities: 12, programs: 5, cohorts: 14, patients: 8420, coverage: 84, adherence: 88, openAlerts: 5, status: "active" },
+  { slug: "getvaxxed-field-ops", name: "GetVaxxed Field Ops", lead: "Amara Okoye", region: "Greater Accra", facilities: 12, programs: 5, cohorts: 14, patients: 8420, coverage: 84, adherence: 88, openAlerts: 5, status: "active" },
   { slug: "eastern-health-trust", name: "Eastern Health Trust", lead: "Kojo Anane", region: "Eastern", facilities: 6, programs: 3, cohorts: 8, patients: 3110, coverage: 71, adherence: 79, openAlerts: 3, status: "active" },
   { slug: "ashanti-child-health", name: "Ashanti Child Health", lead: "Efua Danso", region: "Ashanti", facilities: 9, programs: 4, cohorts: 11, patients: 5240, coverage: 80, adherence: 85, openAlerts: 2, status: "active" },
   { slug: "central-epi-partners", name: "Central EPI Partners", lead: "Nii Adjei", region: "Central", facilities: 5, programs: 3, cohorts: 6, patients: 2380, coverage: 76, adherence: 81, openAlerts: 1, status: "active" },
@@ -45,8 +45,8 @@ export type AdminProgram = {
 };
 
 export const ADMIN_PROGRAMS: AdminProgram[] = [
-  { id: "epi-ga", name: "National immunization & Vitamin A", implementor: "LafyAI Field Ops", cohorts: 6, enrolled: 4210, completion: 84, status: "active" },
-  { id: "polio-ga", name: "Polio eradication", implementor: "LafyAI Field Ops", cohorts: 3, enrolled: 1880, completion: 78, status: "active" },
+  { id: "epi-ga", name: "National immunization & Vitamin A", implementor: "GetVaxxed Field Ops", cohorts: 6, enrolled: 4210, completion: 84, status: "active" },
+  { id: "polio-ga", name: "Polio eradication", implementor: "GetVaxxed Field Ops", cohorts: 3, enrolled: 1880, completion: 78, status: "active" },
   { id: "mr-as", name: "Measles-Rubella catch-up", implementor: "Ashanti Child Health", cohorts: 4, enrolled: 2640, completion: 74, status: "active" },
   { id: "rtss-ea", name: "Malaria RTS,S rollout", implementor: "Eastern Health Trust", cohorts: 3, enrolled: 1210, completion: 66, status: "active" },
   { id: "yf-ce", name: "Yellow Fever campaign", implementor: "Central EPI Partners", cohorts: 2, enrolled: 890, completion: 71, status: "active" },
@@ -74,8 +74,8 @@ export const NATIONAL_LOCATIONS = [
 ];
 
 export const CROSS_ALERTS = [
-  { id: "AEFI-2601", name: "Nana Aba Sey", implementor: "LafyAI Field Ops", facility: "Ridge Hospital", detail: "Localised swelling, child refusing to feed", severity: "critical" as const, reportedAt: "2h ago", status: "escalated" as const },
-  { id: "AEFI-2604", name: "Yaw Boateng", implementor: "LafyAI Field Ops", facility: "Korle Bu", detail: "Fever 39.1°C, persistent crying", severity: "moderate" as const, reportedAt: "5h ago", status: "open" as const },
+  { id: "AEFI-2601", name: "Nana Aba Sey", implementor: "GetVaxxed Field Ops", facility: "Ridge Hospital", detail: "Localised swelling, child refusing to feed", severity: "critical" as const, reportedAt: "2h ago", status: "escalated" as const },
+  { id: "AEFI-2604", name: "Yaw Boateng", implementor: "GetVaxxed Field Ops", facility: "Korle Bu", detail: "Fever 39.1°C, persistent crying", severity: "moderate" as const, reportedAt: "5h ago", status: "open" as const },
   { id: "AEFI-2609", name: "Adjoa Nyarko", implementor: "Western Reach Initiative", facility: "Takoradi Hospital", detail: "Vomiting after dose, under observation", severity: "critical" as const, reportedAt: "7h ago", status: "open" as const },
   { id: "AEFI-2603", name: "Kweku Otoo", implementor: "Ashanti Child Health", facility: "Madina CHPS", detail: "Rash on left arm, mild fever", severity: "moderate" as const, reportedAt: "9h ago", status: "open" as const },
   { id: "AEFI-2519", name: "Ama Serwaa", implementor: "Eastern Health Trust", facility: "Nsawam Gov. Hospital", detail: "Low-grade fever, tolerating feeds", severity: "mild" as const, reportedAt: "1d ago", status: "open" as const },
@@ -110,20 +110,20 @@ export type PlatformUser = {
 };
 
 export const PLATFORM_USERS: PlatformUser[] = [
-  { id: "u-001", name: "Akosua Mensah", email: "akosua@lafyai.org", role: "Super admin", scope: "All facilities", organisation: "lafyai", status: "active", lastActive: "12m ago" },
-  { id: "u-002", name: "Amara Okoye", email: "amara@fieldops.org", role: "Implementor lead", scope: "12 facilities · Greater Accra", organisation: "LafyAI Field Ops", status: "active", lastActive: "1h ago" },
+  { id: "u-001", name: "Akosua Mensah", email: "akosua@getvaxxed.org", role: "Super admin", scope: "All facilities", organisation: "getvaxxed", status: "active", lastActive: "12m ago" },
+  { id: "u-002", name: "Amara Okoye", email: "amara@fieldops.org", role: "Implementor lead", scope: "12 facilities · Greater Accra", organisation: "GetVaxxed Field Ops", status: "active", lastActive: "1h ago" },
   { id: "u-003", name: "Kojo Anane", email: "kojo@easterntrust.org", role: "Implementor lead", scope: "6 facilities · Eastern", organisation: "Eastern Health Trust", status: "active", lastActive: "3h ago" },
   { id: "u-004", name: "Efua Danso", email: "efua@ashantich.org", role: "Implementor", scope: "9 facilities · Ashanti", organisation: "Ashanti Child Health", status: "active", lastActive: "5h ago" },
   { id: "u-005", name: "Nii Adjei", email: "nii@centralepi.org", role: "Implementor", scope: "5 facilities · Central", organisation: "Central EPI Partners", status: "active", lastActive: "1d ago" },
   { id: "u-006", name: "Abena Sarpong", email: "abena@westernreach.org", role: "Implementor", scope: "4 facilities · Western", organisation: "Western Reach Initiative", status: "invited", lastActive: "—" },
   { id: "u-007", name: "Yaw Dumor", email: "yaw@voltaoutreach.org", role: "Implementor", scope: "3 facilities · Volta", organisation: "Volta Outreach Network", status: "suspended", lastActive: "24d ago" },
-  { id: "u-008", name: "Gifty Boateng", email: "gifty@korlebu.gov.gh", role: "Facility admin", scope: "Korle Bu Teaching Hospital", organisation: "LafyAI Field Ops", status: "active", lastActive: "22m ago" },
-  { id: "u-009", name: "Kwame Asare", email: "kwame@ridge.gov.gh", role: "Health worker", scope: "Ridge Hospital", organisation: "LafyAI Field Ops", status: "active", lastActive: "40m ago" },
+  { id: "u-008", name: "Gifty Boateng", email: "gifty@korlebu.gov.gh", role: "Facility admin", scope: "Korle Bu Teaching Hospital", organisation: "GetVaxxed Field Ops", status: "active", lastActive: "22m ago" },
+  { id: "u-009", name: "Kwame Asare", email: "kwame@ridge.gov.gh", role: "Health worker", scope: "Ridge Hospital", organisation: "GetVaxxed Field Ops", status: "active", lastActive: "40m ago" },
   { id: "u-010", name: "Adjoa Nyarko", email: "adjoa@takoradi.gov.gh", role: "Health worker", scope: "Takoradi Hospital", organisation: "Western Reach Initiative", status: "active", lastActive: "2h ago" },
   { id: "u-011", name: "Selina Owusu", email: "selina@madinachps.gov.gh", role: "Health worker", scope: "Madina CHPS", organisation: "Ashanti Child Health", status: "invited", lastActive: "—" },
   { id: "u-012", name: "Daniel Tetteh", email: "daniel@temageneral.gov.gh", role: "Facility admin", scope: "Tema General Hospital", organisation: "Central EPI Partners", status: "active", lastActive: "6h ago" },
   { id: "u-013", name: "Rita Appiah", email: "rita@nsawam.gov.gh", role: "Health worker", scope: "Nsawam Gov. Hospital", organisation: "Eastern Health Trust", status: "suspended", lastActive: "12d ago" },
-  { id: "u-014", name: "Joseph Amoah", email: "joseph@adabraka.gov.gh", role: "Health worker", scope: "Adabraka Polyclinic", organisation: "LafyAI Field Ops", status: "active", lastActive: "3h ago" },
+  { id: "u-014", name: "Joseph Amoah", email: "joseph@adabraka.gov.gh", role: "Health worker", scope: "Adabraka Polyclinic", organisation: "GetVaxxed Field Ops", status: "active", lastActive: "3h ago" },
 ];
 
 export type BillingPlan = "Starter" | "Growth" | "National";
@@ -144,9 +144,9 @@ export type AdminFacility = {
 };
 
 export const ADMIN_FACILITIES: AdminFacility[] = [
-  { id: "f-01", name: "Korle Bu Teaching Hospital", region: "Greater Accra", district: "Ablekuma South", type: "Teaching hospital", implementor: "LafyAI Field Ops", plan: "National", seats: 48, patients: 2140, coverage: 91, active: true, renewsOn: "2026-11-01" },
-  { id: "f-02", name: "Ridge Hospital", region: "Greater Accra", district: "Korle Klottey", type: "Hospital", implementor: "LafyAI Field Ops", plan: "Growth", seats: 26, patients: 1480, coverage: 86, active: true, renewsOn: "2026-09-15" },
-  { id: "f-03", name: "Adabraka Polyclinic", region: "Greater Accra", district: "Korle Klottey", type: "Polyclinic", implementor: "LafyAI Field Ops", plan: "Growth", seats: 18, patients: 940, coverage: 88, active: true, renewsOn: "2026-10-05" },
+  { id: "f-01", name: "Korle Bu Teaching Hospital", region: "Greater Accra", district: "Ablekuma South", type: "Teaching hospital", implementor: "GetVaxxed Field Ops", plan: "National", seats: 48, patients: 2140, coverage: 91, active: true, renewsOn: "2026-11-01" },
+  { id: "f-02", name: "Ridge Hospital", region: "Greater Accra", district: "Korle Klottey", type: "Hospital", implementor: "GetVaxxed Field Ops", plan: "Growth", seats: 26, patients: 1480, coverage: 86, active: true, renewsOn: "2026-09-15" },
+  { id: "f-03", name: "Adabraka Polyclinic", region: "Greater Accra", district: "Korle Klottey", type: "Polyclinic", implementor: "GetVaxxed Field Ops", plan: "Growth", seats: 18, patients: 940, coverage: 88, active: true, renewsOn: "2026-10-05" },
   { id: "f-04", name: "Madina CHPS", region: "Greater Accra", district: "La Nkwantanang", type: "CHPS", implementor: "Ashanti Child Health", plan: "Starter", seats: 8, patients: 410, coverage: 74, active: true, renewsOn: "2026-08-20" },
   { id: "f-05", name: "Tema General Hospital", region: "Greater Accra", district: "Tema Metro", type: "Hospital", implementor: "Central EPI Partners", plan: "Growth", seats: 22, patients: 1180, coverage: 79, active: true, renewsOn: "2026-12-01" },
   { id: "f-06", name: "Nsawam Gov. Hospital", region: "Eastern", district: "Nsawam Adoagyiri", type: "Hospital", implementor: "Eastern Health Trust", plan: "Growth", seats: 20, patients: 860, coverage: 71, active: true, renewsOn: "2026-09-30" },
@@ -183,7 +183,7 @@ export type BillingAccount = {
 };
 
 export const BILLING_ACCOUNTS: BillingAccount[] = [
-  { id: "acc-1001", account: "LafyAI Field Ops", implementor: "LafyAI Field Ops", plan: "National", facilities: 12, seats: 60, amount: 2400, cycle: "Monthly", status: "active", nextInvoice: "2026-08-01" },
+  { id: "acc-1001", account: "GetVaxxed Field Ops", implementor: "GetVaxxed Field Ops", plan: "National", facilities: 12, seats: 60, amount: 2400, cycle: "Monthly", status: "active", nextInvoice: "2026-08-01" },
   { id: "acc-1002", account: "Ashanti Child Health", implementor: "Ashanti Child Health", plan: "National", facilities: 9, seats: 50, amount: 25920, cycle: "Annual", status: "active", nextInvoice: "2027-01-15" },
   { id: "acc-1003", account: "Eastern Health Trust", implementor: "Eastern Health Trust", plan: "Growth", facilities: 6, seats: 30, amount: 780, cycle: "Monthly", status: "past_due", nextInvoice: "2026-07-30" },
   { id: "acc-1004", account: "Central EPI Partners", implementor: "Central EPI Partners", plan: "Growth", facilities: 5, seats: 24, amount: 780, cycle: "Monthly", status: "active", nextInvoice: "2026-08-05" },
@@ -235,7 +235,7 @@ export type AuditEntry = {
 };
 
 export const AUDIT_LOG_STUB: AuditEntry[] = [
-  { id: "al-001", created_at: new Date().toISOString(), action: "user_suspended", actor_email: "akosua@lafyai.org", target: "yaw@voltaoutreach.org", detail: "Account suspended pending review" },
-  { id: "al-002", created_at: new Date(Date.now() - 3600000).toISOString(), action: "billing_account_created", actor_email: "akosua@lafyai.org", target: "acc-1005", detail: "Starter trial — Western Reach Initiative" },
-  { id: "al-003", created_at: new Date(Date.now() - 7200000).toISOString(), action: "facility_added", actor_email: "akosua@lafyai.org", target: "Takoradi Hospital", detail: "Assigned to Western Reach Initiative" },
+  { id: "al-001", created_at: new Date().toISOString(), action: "user_suspended", actor_email: "akosua@getvaxxed.org", target: "yaw@voltaoutreach.org", detail: "Account suspended pending review" },
+  { id: "al-002", created_at: new Date(Date.now() - 3600000).toISOString(), action: "billing_account_created", actor_email: "akosua@getvaxxed.org", target: "acc-1005", detail: "Starter trial — Western Reach Initiative" },
+  { id: "al-003", created_at: new Date(Date.now() - 7200000).toISOString(), action: "facility_added", actor_email: "akosua@getvaxxed.org", target: "Takoradi Hospital", detail: "Assigned to Western Reach Initiative" },
 ];

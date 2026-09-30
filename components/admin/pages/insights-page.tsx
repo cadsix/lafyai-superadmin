@@ -2,7 +2,7 @@
 
 import { Lightbulb, Users, MessageSquare, TrendingUp, ArrowUpRight } from "lucide-react";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,

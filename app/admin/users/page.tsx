@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { UsersPage } from "@/components/admin/pages/users-page";
 import type { UserListItem } from "@/lib/types";
 
-export const metadata = { title: "User management — lafyai super admin" };
+export const metadata = { title: "User management — GetVaxxed super admin" };
 
 type UsersResponse = {
   total_users: number;

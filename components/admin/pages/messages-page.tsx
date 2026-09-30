@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { MessageSquare, CheckCheck, XCircle, BellOff, Search, X } from "lucide-react";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Search, Building2, Users, Syringe, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,7 +130,7 @@ export function ImplementorsPage({
     <div className="space-y-6">
       <PageHeader
         title="Implementors"
-        description="Organisations running immunization programs on LafyAI."
+        description="Organisations running immunization programs on GetVaxxed."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

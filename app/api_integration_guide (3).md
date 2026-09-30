@@ -1,4 +1,4 @@
-# Lafy AI — Frontend API Integration Guide
+# GetVaxxed — Frontend API Integration Guide
 
 This guide details all API endpoints, request headers, authentication flows, and typed payloads for frontend developers building both the **Facility Admin Portal** and the **Super Admin Portal**.
 

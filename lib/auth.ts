@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { loginRequest, api } from "@/lib/api";
 
-const COOKIE = "lafy_token";
+const COOKIE = "getvaxxed_token";
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -17,7 +17,7 @@ const COOKIE_OPTS = {
 
 export async function getToken(): Promise<string | undefined> {
   const cookieStore = await cookies();
-  return cookieStore.get(COOKIE)?.value;
+  return cookieStore.get(COOKIE)?.value ?? cookieStore.get("lafy_token")?.value;
 }
 
 export async function isAuthenticated(): Promise<boolean> {
@@ -90,5 +90,6 @@ export async function logoutAction(): Promise<void> {
   }
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE);
+  cookieStore.delete("lafy_token");
   redirect("/auth");
 }

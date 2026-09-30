@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { CoveragePage } from "@/components/admin/pages/coverage-page";
 import type { CoverageSummary, CoverageAntigenItem } from "@/lib/types";
 
-export const metadata = { title: "Coverage — lafyai super admin" };
+export const metadata = { title: "Coverage — GetVaxxed super admin" };
 
 type AntigensResponse = {
   items: CoverageAntigenItem[];

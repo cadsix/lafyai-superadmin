@@ -1,7 +1,7 @@
 /**
  * Server-side API client.
  * All functions run in Server Components / Server Actions — never in the browser.
- * Token is read from the 'lafy_token' cookie via next/headers.
+ * Token is read from the 'getvaxxed_token' cookie via next/headers.
  */
 
 import { cookies } from "next/headers";
@@ -20,7 +20,7 @@ export class ApiError extends Error {
 
 async function getHeaders(): Promise<HeadersInit> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("lafy_token")?.value;
+  const token = cookieStore.get("getvaxxed_token")?.value ?? cookieStore.get("lafy_token")?.value;
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
