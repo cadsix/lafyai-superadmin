@@ -4,8 +4,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "lafyai — Super Admin Console",
+  title: "GetVaxxed — Super Admin Console",
   description: "National immunization oversight across all implementors.",
+  icons: {
+    icon: "/images/logos/getvaxxed-icon.png",
+    shortcut: "/images/logos/getvaxxed-icon.png",
+    apple: "/images/logos/getvaxxed-icon.png",
+  },
 };
 
 export default function RootLayout({

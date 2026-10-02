@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Building2, CheckCircle2, Users, Search, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

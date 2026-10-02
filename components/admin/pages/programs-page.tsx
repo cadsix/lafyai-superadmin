@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { BookOpen, Users, CheckCircle2, TrendingUp, X } from "lucide-react";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

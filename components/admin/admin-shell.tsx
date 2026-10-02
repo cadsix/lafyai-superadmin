@@ -63,14 +63,15 @@ function SidebarInner({
   return (
     <>
       <div className="flex flex-col px-4 pt-4 pb-3 border-b border-sidebar-border">
-        {/* lafy-name.png 642×258 → fits ~200px wide in a 256px sidebar */}
+        {/* GetVaxxed full horizontal logo */}
         <Image
-          src="/icons/lafy-name.png"
-          alt="LafyAI"
-          width={120}
-          height={48}
+          src="/images/logos/getvaxxed-logoN.PNG"
+          alt="GetVaxxed"
+          width={130}
+          height={40}
           priority
-          style={{ width: "90px", height: "auto" }}
+          className="brightness-0 invert"
+          style={{ width: "115px", height: "auto" }}
         />
         <span className="mt-1.5 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
           Super admin console
@@ -128,7 +129,7 @@ export function AdminShell({
   const user = useSession();
 
   const displayName = user?.name ?? "Admin";
-  const displayOrg = user?.facility_name ?? "lafyai";
+  const displayOrg = user?.facility_name ?? "GetVaxxed";
   const openAlerts = alerts.slice(0, 5);
 
   return (
@@ -157,10 +158,10 @@ export function AdminShell({
           </Sheet>
 
           <div className="md:hidden font-semibold flex items-center gap-2">
-            <div className="relative h-10 w-10">
-              <Image src="/icons/lafyai-icon2.png" alt="LafyAI" fill className="object-contain" />
+            <div className="relative h-8 w-8">
+              <Image src="/images/logos/getvaxxed-icon.png" alt="GetVaxxed" fill className="object-contain" />
             </div>
-            lafyai
+            GetVaxxed
           </div>
 
           <Badge variant="secondary" className="hidden sm:inline-flex">

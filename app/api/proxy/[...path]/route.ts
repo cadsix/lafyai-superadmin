@@ -15,7 +15,7 @@ async function handler(req: NextRequest, { params }: { params: Promise<{ path: s
   const upstream = `${API_BASE}/${path.join("/")}`;
 
   const cookieStore = await cookies();
-  const token = cookieStore.get("lafy_token")?.value;
+  const token = cookieStore.get("getvaxxed_token")?.value ?? cookieStore.get("lafy_token")?.value;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",

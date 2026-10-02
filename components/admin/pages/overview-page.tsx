@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Building2, Users, Syringe, AlertTriangle } from "lucide-react";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { OverviewSummary, OverviewTrendPoint } from "@/lib/types";

@@ -3,7 +3,7 @@ import { OverviewPage } from "@/components/admin/pages/overview-page";
 import type { OverviewSummary, OverviewTrendPoint } from "@/lib/types";
 
 export const metadata = {
-  title: "National overview — lafyai super admin",
+  title: "National overview — GetVaxxed super admin",
   description: "National immunization rollup across all implementors.",
 };
 

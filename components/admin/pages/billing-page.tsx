@@ -7,7 +7,7 @@ import {
 import { CreditCard, Plus, TrendingUp, Wallet, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/lafy/page-header";
+import { PageHeader } from "@/components/getvaxxed/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

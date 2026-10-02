@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { FacilitiesPage } from "@/components/admin/pages/facilities-page";
 import type { FacilityListItem } from "@/lib/types";
 
-export const metadata = { title: "Facilities — lafyai super admin" };
+export const metadata = { title: "Facilities — GetVaxxed super admin" };
 
 type FacilitiesResponse = {
   summary: unknown;

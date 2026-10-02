@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { MessagesPage } from "@/components/admin/pages/messages-page";
 import type { MessageLogMetrics, MessageLogEntry } from "@/lib/types";
 
-export const metadata = { title: "Message log — lafyai super admin" };
+export const metadata = { title: "Message log — GetVaxxed super admin" };
 
 type MessagesResponse = {
   metrics: MessageLogMetrics;

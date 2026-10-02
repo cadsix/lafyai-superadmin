@@ -1,1 +1,1 @@
-# lafyai-superadmin
+# GetVaxxed — Super Admin Console

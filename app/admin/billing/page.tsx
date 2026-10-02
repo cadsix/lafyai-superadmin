@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { BillingPage } from "@/components/admin/pages/billing-page";
 import type { BillingMetrics, BillingPlanItem, BillingAccountItem } from "@/lib/types";
 
-export const metadata = { title: "Billing — lafyai super admin" };
+export const metadata = { title: "Billing — GetVaxxed super admin" };
 
 type BillingResponse = {
   metrics: BillingMetrics;
